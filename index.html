@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Armistice — hold the peace between two clockwork nations</title>
+<meta name="description" content="Two nations march to war on their own. You are the League's arbiter. Enact one law each season — it binds both sides equally — and see how many years you can keep anyone from winning.">
+<meta property="og:title" content="Armistice">
+<meta property="og:description" content="You cannot win this war. You can only keep it from ending. A peacekeeping game about symmetric law and asymmetric consequence.">
+<meta property="og:type" content="website">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='32' cy='32' r='30' fill='%23c9b98a'/%3E%3Cpath d='M16 40c2-9 11-17 22-17-3-2-3-7 1-10-1 4 1 7 5 7-2 5-9 8-14 8 7 2 16 3 20-2-1 9-12 16-23 16-4 0-8-1-11-2Z' fill='%233a3a2e'/%3E%3C/svg%3E">
+<style>
+  :root {
+    --paper: #d8cfab;
+    --paper-dark: #c7bb8f;
+    --ink: #2e2a20;
+    --ink-soft: #55503f;
+    --khaki: #8a8060;
+    --khaki-line: #6b6248;
+    --red-ink: #7a3b2e;
+    --side-a: #4d5a3e;
+    --side-b: #6e3f36;
+    --cream: #efe8d0;
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: Georgia, 'Times New Roman', serif;
+  }
+  body {
+    min-height: 100dvh;
+    display: flex;
+    justify-content: center;
+    background:
+      radial-gradient(ellipse at top left, rgba(255,255,255,0.08), transparent 60%),
+      repeating-linear-gradient(0deg, rgba(0,0,0,0.02) 0px, rgba(0,0,0,0.02) 1px, transparent 1px, transparent 3px),
+      var(--paper);
+  }
+  .app {
+    width: 100%;
+    max-width: 480px;
+    min-height: 100dvh;
+    display: flex;
+    flex-direction: column;
+    padding: calc(env(safe-area-inset-top) + 18px) calc(env(safe-area-inset-right) + 18px)
+             calc(env(safe-area-inset-bottom) + 18px) calc(env(safe-area-inset-left) + 18px);
+  }
+  .hidden { display: none !important; }
+  h1, h2, h3 { margin: 0 0 8px; font-weight: normal; letter-spacing: 0.02em; }
+  p { margin: 0 0 12px; line-height: 1.5; color: var(--ink-soft); }
+  .dove { font-size: 40px; line-height: 1; margin-bottom: 4px; display:block; }
+
+  /* ---- Title screen ---- */
+  #screen-title { display: flex; flex-direction: column; align-items: center; text-align: center; flex: 1; justify-content: center; gap: 6px; }
+  #screen-title h1 { font-size: 2.4em; text-transform: uppercase; letter-spacing: 0.08em; color: var(--ink); }
+  .tagline { font-style: italic; color: var(--ink-soft); margin-bottom: 22px; max-width: 340px; }
+  .best-line { font-size: 0.85em; color: var(--khaki-line); margin-bottom: 18px; }
+  .btn {
+    font-family: inherit;
+    font-size: 1.05em;
+    padding: 14px 22px;
+    width: 100%;
+    max-width: 320px;
+    border: 1px solid var(--khaki-line);
+    background: var(--cream);
+    color: var(--ink);
+    border-radius: 3px;
+    cursor: pointer;
+    margin-bottom: 12px;
+    box-shadow: 0 1px 0 rgba(0,0,0,0.15);
+  }
+  .btn:active { transform: translateY(1px); box-shadow: none; }
+  .btn.primary { background: var(--ink); color: var(--cream); border-color: var(--ink); }
+  .btn.ghost { background: transparent; }
+
+  /* ---- How-to screen ---- */
+  #screen-howto { flex: 1; overflow-y: auto; padding-top: 10px; }
+  #screen-howto h2 { font-size: 1.4em; margin-bottom: 14px; }
+  #screen-howto .law-example { border-left: 3px solid var(--khaki-line); padding-left: 10px; margin: 10px 0; font-size: 0.92em; }
+
+  /* ---- Play screen ---- */
+  #screen-play { flex: 1; display: flex; flex-direction: column; }
+  .hud-row { display: flex; justify-content: space-between; font-size: 0.85em; color: var(--khaki-line); margin-bottom: 10px; }
+
+  .front-wrap { margin-bottom: 18px; }
+  .front-labels { display: flex; justify-content: space-between; font-size: 0.85em; margin-bottom: 4px; }
+  .front-labels .a { color: var(--side-a); }
+  .front-labels .b { color: var(--side-b); }
+  .front-track {
+    position: relative;
+    height: 14px;
+    background: linear-gradient(to right, var(--side-a), var(--side-b));
+    border-radius: 7px;
+    border: 1px solid var(--khaki-line);
+    overflow: visible;
+  }
+  .front-fill {
+    position: absolute;
+    top: 0; left: 0; bottom: 0;
+    width: 50%;
+    background: rgba(0,0,0,0.12);
+    transition: width 0.5s ease;
+  }
+  .front-marker {
+    position: absolute;
+    top: -6px;
+    left: 50%;
+    width: 2px;
+    height: 26px;
+    background: var(--red-ink);
+    transform: translateX(-1px);
+    transition: left 0.5s ease;
+  }
+
+  .nation { margin-bottom: 10px; }
+  .nation-name { font-size: 0.9em; margin-bottom: 3px; }
+  .nation-name.a { color: var(--side-a); }
+  .nation-name.b { color: var(--side-b); }
+  .bar-label { display: flex; justify-content: space-between; font-size: 0.72em; color: var(--khaki-line); }
+  .bar-track { height: 8px; background: var(--paper-dark); border-radius: 4px; margin-bottom: 6px; border: 1px solid var(--khaki-line); }
+  .bar-fill { height: 100%; border-radius: 4px; transition: width 0.5s ease; }
+  .bar-fill.army { background: var(--ink); }
+  .bar-fill.econ { background: var(--khaki); }
+
+  .suffering-line { font-size: 0.85em; color: var(--red-ink); margin: 8px 0 16px; text-align: center; }
+
+  .law-heading { font-size: 0.85em; text-transform: uppercase; letter-spacing: 0.06em; color: var(--khaki-line); margin: 6px 0 8px; text-align: center; }
+  #law-cards { display: flex; flex-direction: column; gap: 10px; margin-top: auto; }
+  .law-card {
+    font-family: inherit;
+    text-align: left;
+    background: var(--cream);
+    border: 1px solid var(--khaki-line);
+    border-radius: 4px;
+    padding: 12px 14px;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .law-card:active { background: var(--paper-dark); }
+  .law-name { font-size: 1.02em; }
+  .law-desc { font-size: 0.82em; color: var(--ink-soft); line-height: 1.35; }
+
+  /* ---- End screen ---- */
+  #screen-end { flex: 1; display: flex; flex-direction: column; align-items: center; text-align: center; justify-content: center; }
+  #end-headline { font-size: 1.6em; margin-bottom: 10px; }
+  #end-copy { max-width: 340px; }
+  .stat-row { display: flex; gap: 24px; margin: 14px 0 20px; }
+  .stat { text-align: center; }
+  .stat .num { font-size: 1.6em; display: block; }
+  .stat .lbl { font-size: 0.72em; color: var(--khaki-line); text-transform: uppercase; letter-spacing: 0.05em; }
+  #end-share {
+    font-family: inherit;
+    width: 100%;
+    max-width: 340px;
+    padding: 10px;
+    border: 1px solid var(--khaki-line);
+    background: var(--cream);
+    color: var(--ink-soft);
+    font-size: 0.78em;
+    border-radius: 3px;
+    margin-bottom: 12px;
+  }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <section id="screen-title">
+    <span class="dove" aria-hidden="true">
+      <svg width="44" height="44" viewBox="0 0 64 64"><circle cx="32" cy="32" r="30" fill="#efe8d0" stroke="#6b6248" stroke-width="1"/><path d="M16 40c2-9 11-17 22-17-3-2-3-7 1-10-1 4 1 7 5 7-2 5-9 8-14 8 7 2 16 3 20-2-1 9-12 16-23 16-4 0-8-1-11-2Z" fill="#2e2a20"/></svg>
+    </span>
+    <h1>Armistice</h1>
+    <p class="tagline">Two nations are already at war. You cannot win it for either of them. You can only keep it from ending.</p>
+    <p class="best-line">Longest peace held: <span id="best-years-title">0</span> years</p>
+    <button class="btn primary" id="btn-play-random" type="button">Begin a New War</button>
+    <button class="btn" id="btn-play-daily" type="button">Today's Armistice</button>
+    <button class="btn ghost" id="btn-howto" type="button">How the League Works</button>
+  </section>
+
+  <section id="screen-howto" class="hidden">
+    <h2>How the League Works</h2>
+    <p>Ostrun and Meridale fight without you. Every season their armies clash along a front line, and one of them edges closer to winning outright.</p>
+    <p>You are not a general. You are the arbiter of a League neither nation can leave. Each season you are handed three drafted laws. You must enact exactly one.</p>
+    <p>Every law you pass applies to <strong>both nations equally</strong> — a conscription cap slows both armies, a truce silences both guns, an arms tax taxes both treasuries. You never get to help just one side.</p>
+    <div class="law-example">
+      <strong>Conscription Caps</strong><br>
+      No nation may levy more than half its usual harvest of soldiers this year.
+    </div>
+    <div class="law-example">
+      <strong>Winter Truce</strong><br>
+      Both armies stand down at the front for one season. No ground taken.
+    </div>
+    <p>A law that helps a weaker nation catch up also slows the stronger one down less than you'd expect — the same rule lands differently on two different economies. That asymmetry, from a symmetric law, is the whole game.</p>
+    <p>The war ends when one side breaks through, or when both armies collapse together, or when twenty years pass with the League still holding. Your score is how long the peace held, and how much suffering it cost to hold it.</p>
+    <button class="btn" id="btn-howto-back" type="button">Back</button>
+  </section>
+
+  <section id="screen-play" class="hidden">
+    <div class="hud-row">
+      <span>Year <span id="year-count">0</span></span>
+      <span><span id="years-left">20</span> until Armistice</span>
+    </div>
+
+    <div class="front-wrap">
+      <div class="front-labels"><span class="a">Ostrun</span><span class="b">Meridale</span></div>
+      <div class="front-track">
+        <div class="front-fill" id="front-fill"></div>
+        <div class="front-marker" id="front-marker"></div>
+      </div>
+    </div>
+
+    <div class="nation">
+      <div class="nation-name a">Ostrun</div>
+      <div class="bar-label"><span>Army</span><span id="a-army-num">0</span></div>
+      <div class="bar-track"><div class="bar-fill army" id="a-army"></div></div>
+      <div class="bar-label"><span>Treasury</span><span id="a-econ-num">0</span></div>
+      <div class="bar-track"><div class="bar-fill econ" id="a-econ"></div></div>
+    </div>
+
+    <div class="nation">
+      <div class="nation-name b">Meridale</div>
+      <div class="bar-label"><span>Army</span><span id="b-army-num">0</span></div>
+      <div class="bar-track"><div class="bar-fill army" id="b-army"></div></div>
+      <div class="bar-label"><span>Treasury</span><span id="b-econ-num">0</span></div>
+      <div class="bar-track"><div class="bar-fill econ" id="b-econ"></div></div>
+    </div>
+
+    <p class="suffering-line">Suffering so far: <span id="suffering-count">0</span></p>
+
+    <p class="law-heading">Enact one law — it binds both sides</p>
+    <div id="law-cards"></div>
+  </section>
+
+  <section id="screen-end" class="hidden">
+    <h2 id="end-headline"></h2>
+    <p id="end-copy"></p>
+    <div class="stat-row">
+      <div class="stat"><span class="num" id="end-years">0</span><span class="lbl">Years Held</span></div>
+      <div class="stat"><span class="num" id="end-suffering">0</span><span class="lbl">Suffering</span></div>
+      <div class="stat"><span class="num" id="end-best">0</span><span class="lbl">Best Ever</span></div>
+    </div>
+    <input id="end-share" type="text" readonly>
+    <button class="btn ghost" id="btn-copy-share" type="button">Copy to Share</button>
+    <button class="btn primary" id="btn-play-again" type="button">Play Again</button>
+    <button class="btn" id="btn-end-title" type="button">Title</button>
+  </section>
+
+</div>
+<script type="module" src="./game.js"></script>
+</body>
+</html>
